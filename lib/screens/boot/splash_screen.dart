@@ -74,8 +74,8 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 600),
-        pageBuilder: (_, __, ___) => const LoginScreen(),
-        transitionsBuilder: (_, anim, __, child) =>
+        pageBuilder: (_, _, _) => const LoginScreen(),
+        transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
     );
@@ -90,129 +90,216 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NexOSTheme.bg,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Spacer(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2C001E), Color(0xFF3D1030), Color(0xFF1A000F)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Spacer(),
 
-              // ── Logo ───────────────────────────────────────────────────
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: NexOSTheme.accent, width: 2),
-                        boxShadow: [BoxShadow(color: NexOSTheme.accentGlow, blurRadius: 24, spreadRadius: 4)],
+                // ── Ubuntu-style logo ─────────────────────────────────
+                Center(
+                  child: Column(
+                    children: [
+                      // Circle of dots – Ubuntu logo homage
+                      _UbuntuLogo()
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .scaleXY(
+                            end: 1.04,
+                            duration: 1400.ms,
+                            curve: Curves.easeInOut,
+                          ),
+                      const SizedBox(height: 28),
+                      Text(
+                        'NexOS',
+                        style: GoogleFonts.ubuntu(
+                          fontSize: 38,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white,
+                          letterSpacing: 4,
+                        ),
                       ),
-                      child: const Icon(Icons.memory, color: NexOSTheme.accent, size: 38),
-                    )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .scaleXY(end: 1.06, duration: 1200.ms, curve: Curves.easeInOut),
-                    const SizedBox(height: 20),
-                    Text('NexOS',
-                      style: GoogleFonts.orbitron(
-                        fontSize: 36, fontWeight: FontWeight.w800,
-                        color: NexOSTheme.accent,
-                        letterSpacing: 6,
-                        shadows: [Shadow(color: NexOSTheme.accentGlow, blurRadius: 20)],
+                      const SizedBox(height: 6),
+                      Text(
+                        'CSEC 431-1  |  Operating Systems & Analysis',
+                        style: GoogleFonts.ubuntu(
+                          fontSize: 11,
+                          color: NexOSTheme.textSec,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Spacer(),
+
+                // ── Boot log ──────────────────────────────────────────
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: NexOSTheme.border.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: ListView.builder(
+                    reverse: true,
+                    itemCount: _bootStepIndex,
+                    itemBuilder: (ctx, i) {
+                      final idx = _bootStepIndex - 1 - i;
+                      final entry = _bootLog[idx];
+                      final isLast = i == 0;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1),
+                        child: Text(
+                          entry.message,
+                          style: GoogleFonts.ubuntuMono(
+                            fontSize: 11,
+                            color: isLast
+                                ? NexOSTheme.accent
+                                : NexOSTheme.textSec.withValues(alpha: 0.65),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ── Ubuntu-style dot progress ─────────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0.0, end: _progress),
+                          duration: const Duration(milliseconds: 300),
+                          builder: (_, val, _) => LinearProgressIndicator(
+                            value: val,
+                            minHeight: 4,
+                            backgroundColor:
+                                NexOSTheme.border.withValues(alpha: 0.4),
+                            valueColor: const AlwaysStoppedAnimation(
+                                NexOSTheme.accent),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text('CSEC 431-1 | Operating Systems & Analysis',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 11, color: NexOSTheme.textSec, letterSpacing: 1.2,
+                    const SizedBox(width: 12),
+                    Text(
+                      '${(_progress * 100).toInt()}%',
+                      style: GoogleFonts.ubuntuMono(
+                        color: NexOSTheme.accent,
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
-              ),
 
-              const Spacer(),
+                const SizedBox(height: 10),
 
-              // ── Boot log terminal ──────────────────────────────────────
-              Container(
-                height: 220,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF060A10),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: NexOSTheme.border),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: ListView.builder(
-                  reverse: true,
-                  itemCount: _bootStepIndex,
-                  itemBuilder: (ctx, i) {
-                    final idx = _bootStepIndex - 1 - i;
-                    final entry = _bootLog[idx];
-                    final isLast = i == 0;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 1),
-                      child: Text(
-                        entry.message,
-                        style: GoogleFonts.sourceCodePro(
-                          fontSize: 11,
-                          color: isLast
-                              ? NexOSTheme.accent
-                              : NexOSTheme.textSec.withOpacity(0.7),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // ── Progress bar ───────────────────────────────────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: _progress),
-                        duration: const Duration(milliseconds: 300),
-                        builder: (_, val, __) => LinearProgressIndicator(
-                          value: val,
-                          minHeight: 6,
-                          backgroundColor: NexOSTheme.border,
-                          valueColor: const AlwaysStoppedAnimation(NexOSTheme.accent),
-                        ),
-                      ),
-                    ),
+                Text(
+                  _done ? 'System ready.' : 'Loading system components...',
+                  style: GoogleFonts.ubuntu(
+                    fontSize: 12,
+                    color: NexOSTheme.textSec,
+                    fontWeight: FontWeight.w300,
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '${(_progress * 100).toInt()}%',
-                    style: GoogleFonts.sourceCodePro(
-                      color: NexOSTheme.accent, fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              Text(
-                _done ? 'System ready.' : 'Loading system components...',
-                style: GoogleFonts.sourceCodePro(
-                  fontSize: 11, color: NexOSTheme.textSec,
                 ),
-              ),
 
-              const SizedBox(height: 16),
-            ],
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+// ── Ubuntu logo circle-of-dots widget ────────────────────────────────────────
+class _UbuntuLogo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 88, height: 88,
+      child: CustomPaint(painter: _UbuntuLogoPainter()),
+    );
+  }
+}
+
+class _UbuntuLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r = size.width / 2;
+
+    // Outer circle (ring)
+    final ringPaint = Paint()
+      ..color = NexOSTheme.accent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5;
+    canvas.drawCircle(Offset(cx, cy), r - 4, ringPaint);
+
+    // Three dots on the ring (Ubuntu logo positions)
+    final dotPaint = Paint()
+      ..color = NexOSTheme.accent
+      ..style = PaintingStyle.fill;
+
+    const dotR = 9.0;
+    const gapAngle = 0.42; // radians gap around each dot
+
+    final dotAngles = [
+      -1.5708,          // top
+      -1.5708 + 2.094,  // bottom-right
+      -1.5708 + 4.189,  // bottom-left
+    ];
+
+    final ringR = r - 4;
+    for (final angle in dotAngles) {
+      // Draw gap (clear the ring)
+      final gapPaint = Paint()
+        ..color = const Color(0xFF2C001E)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6;
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(cx, cy), radius: ringR),
+        angle - gapAngle / 2,
+        gapAngle,
+        false,
+        gapPaint,
+      );
+      // Draw dot
+      final dx = cx + ringR * _cos(angle);
+      final dy = cy + ringR * _sin(angle);
+      canvas.drawCircle(Offset(dx, dy), dotR, dotPaint);
+    }
+  }
+
+  double _cos(double a) => (a == -1.5708) ? 0 : (a < 0 ? 0.866 : -0.866);
+  double _sin(double a) {
+    if (a == -1.5708) return -1;
+    if (a < 0) return 0.5;
+    return 0.5;
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }
 
 class _BootEntry {

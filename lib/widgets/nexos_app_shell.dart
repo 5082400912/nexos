@@ -31,24 +31,37 @@ class NexOSAppShell extends StatelessWidget {
     return Scaffold(
       backgroundColor: NexOSTheme.bg,
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1A0014),
+        elevation: 0,
+        leading: const BackButton(color: NexOSTheme.textPri),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: iconColor, size: 18),
             const SizedBox(width: 8),
-            Text(title),
+            Text(
+              title,
+              style: GoogleFonts.ubuntu(
+                color: NexOSTheme.textPri,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
           ],
         ),
-        leading: const BackButton(),
         actions: [
-          // Tap the code icon to see the API reference note
           IconButton(
-            icon: const Icon(Icons.terminal, color: NexOSTheme.textSec, size: 20),
+            icon: const Icon(Icons.terminal,
+                color: NexOSTheme.textSec, size: 20),
             tooltip: 'API reference',
             onPressed: () => _showApiNote(context),
           ),
           ...?actions,
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: NexOSTheme.border),
+        ),
       ),
       body: body,
       floatingActionButton: fab,
@@ -60,7 +73,7 @@ class NexOSAppShell extends StatelessWidget {
       context: context,
       backgroundColor: NexOSTheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       builder: (_) => Padding(
         padding: const EdgeInsets.all(20),
@@ -72,9 +85,12 @@ class NexOSAppShell extends StatelessWidget {
               children: [
                 const Icon(Icons.code, color: NexOSTheme.accent, size: 18),
                 const SizedBox(width: 8),
-                Text('Native Android API Reference',
-                  style: GoogleFonts.spaceGrotesk(
-                    color: NexOSTheme.textPri, fontWeight: FontWeight.w700, fontSize: 14,
+                Text(
+                  'Native Android API Reference',
+                  style: GoogleFonts.ubuntu(
+                    color: NexOSTheme.textPri,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -84,13 +100,16 @@ class NexOSAppShell extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF060A10),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: NexOSTheme.border),
               ),
-              child: Text(apiNote,
-                style: GoogleFonts.sourceCodePro(
-                  color: NexOSTheme.accent, fontSize: 12, height: 1.7,
+              child: Text(
+                apiNote,
+                style: GoogleFonts.ubuntuMono(
+                  color: NexOSTheme.accent,
+                  fontSize: 12,
+                  height: 1.7,
                 ),
               ),
             ),

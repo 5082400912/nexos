@@ -36,37 +36,32 @@ class _DesktopScreenState extends State<DesktopScreen> {
     _AppTile(
       label: 'About Device',
       icon: Icons.info_outline_rounded,
-      color: const Color(0xFF00D4FF),
+      color: const Color(0xFF729FCF),
       screen: const AboutScreen(),
-      description: 'System & hardware info',
     ),
     _AppTile(
       label: 'File Manager',
       icon: Icons.folder_open_rounded,
-      color: const Color(0xFFFFB300),
+      color: const Color(0xFFE95420),
       screen: const FileManagerScreen(),
-      description: 'Browse & manage files',
     ),
     _AppTile(
       label: 'Camera',
       icon: Icons.camera_alt_rounded,
-      color: const Color(0xFF69F0AE),
+      color: const Color(0xFF8AE234),
       screen: const CameraScreen(),
-      description: 'Capture photos & screenshots',
     ),
     _AppTile(
       label: 'Gallery',
       icon: Icons.photo_library_rounded,
-      color: const Color(0xFFE040FB),
+      color: const Color(0xFFAD7FA8),
       screen: const GalleryScreen(),
-      description: 'View saved images',
     ),
     _AppTile(
       label: 'Calculator',
       icon: Icons.calculate_rounded,
-      color: const Color(0xFFFF5252),
+      color: const Color(0xFFFCE94F),
       screen: const CalculatorScreen(),
-      description: 'Compute with memory tracking',
     ),
   ];
 
@@ -81,53 +76,58 @@ class _DesktopScreenState extends State<DesktopScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Status Bar ─────────────────────────────────────────────
-            _StatusBar(clock: _clock),
+            // ── GNOME-style top panel ──────────────────────────────────
+            _TopPanel(clock: _clock),
 
-            // ── Wallpaper header ───────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Row(
+            // ── Wallpaper area + App grid ──────────────────────────────
+            Expanded(
+              child: Column(
                 children: [
-                  const Icon(Icons.memory, color: NexOSTheme.accent, size: 20),
-                  const SizedBox(width: 8),
-                  Text('NexOS Desktop',
-                    style: GoogleFonts.orbitron(
-                      color: NexOSTheme.accent, fontSize: 16, fontWeight: FontWeight.w700,
-                      letterSpacing: 2,
+                  const SizedBox(height: 24),
+
+                  // Section label
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Applications',
+                          style: GoogleFonts.ubuntu(
+                            color: NexOSTheme.textSec,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // App grid
+                  Expanded(
+                    child: GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: _apps.length,
+                      itemBuilder: (ctx, i) => _AppIcon(
+                        tile: _apps[i],
+                        onTap: () => _launch(ctx, _apps[i].screen),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Divider(color: NexOSTheme.border, height: 1),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ── App grid ───────────────────────────────────────────────
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.85,
-                ),
-                itemCount: _apps.length,
-                itemBuilder: (ctx, i) => _AppIcon(
-                  tile: _apps[i],
-                  onTap: () => _launch(ctx, _apps[i].screen),
-                ),
-              ),
-            ),
-
-            // ── Taskbar ────────────────────────────────────────────────
-            _Taskbar(),
+            // ── Ubuntu-style dock ──────────────────────────────────────
+            _Dock(apps: _apps, onLaunch: _launch),
           ],
         ),
       ),
@@ -135,34 +135,65 @@ class _DesktopScreenState extends State<DesktopScreen> {
   }
 }
 
-// ── Status bar ──────────────────────────────────────────────────────────────
-class _StatusBar extends StatelessWidget {
+// ── GNOME top panel ──────────────────────────────────────────────────────────
+class _TopPanel extends StatelessWidget {
   final Stream<DateTime> clock;
-  const _StatusBar({required this.clock});
+  const _TopPanel({required this.clock});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: NexOSTheme.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: const Color(0xFF1A0014),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [
-          StreamBuilder<DateTime>(
-            stream: clock,
-            initialData: DateTime.now(),
-            builder: (_, snap) => Text(
-              DateFormat('HH:mm  EEE, MMM d').format(snap.data!),
-              style: GoogleFonts.sourceCodePro(
-                fontSize: 12, color: NexOSTheme.textPri, fontWeight: FontWeight.w500,
+          // Activities button (left)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: NexOSTheme.accent.withValues(alpha: 0.15),
+            ),
+            child: Text(
+              'Activities',
+              style: GoogleFonts.ubuntu(
+                color: NexOSTheme.textPri,
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
-          const Spacer(),
-          const Icon(Icons.wifi, size: 16, color: NexOSTheme.textSec),
-          const SizedBox(width: 8),
-          const Icon(Icons.signal_cellular_alt, size: 16, color: NexOSTheme.textSec),
-          const SizedBox(width: 8),
-          const Icon(Icons.battery_std, size: 16, color: NexOSTheme.success),
+
+          // Clock (center)
+          Expanded(
+            child: StreamBuilder<DateTime>(
+              stream: clock,
+              initialData: DateTime.now(),
+              builder: (_, snap) => Center(
+                child: Text(
+                  DateFormat('EEE MMM d  HH:mm').format(snap.data!),
+                  style: GoogleFonts.ubuntu(
+                    fontSize: 13,
+                    color: NexOSTheme.textPri,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // System tray (right)
+          Row(
+            children: [
+              const Icon(Icons.wifi, size: 15, color: NexOSTheme.textPri),
+              const SizedBox(width: 6),
+              const Icon(Icons.volume_up_outlined, size: 15, color: NexOSTheme.textPri),
+              const SizedBox(width: 6),
+              const Icon(Icons.battery_std_outlined, size: 15, color: NexOSTheme.textPri),
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_drop_down, size: 16, color: NexOSTheme.textSec),
+            ],
+          ),
         ],
       ),
     );
@@ -183,23 +214,39 @@ class _AppIcon extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 64, height: 64,
+            width: 68, height: 68,
             decoration: BoxDecoration(
-              color: tile.color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: tile.color.withOpacity(0.35), width: 1.5),
+              gradient: LinearGradient(
+                colors: [
+                  tile.color.withValues(alpha: 0.9),
+                  tile.color.withValues(alpha: 0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
               boxShadow: [
-                BoxShadow(color: tile.color.withOpacity(0.15), blurRadius: 12, spreadRadius: 1),
+                BoxShadow(
+                  color: tile.color.withValues(alpha: 0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
-            child: Icon(tile.icon, color: tile.color, size: 30),
+            child: Icon(tile.icon, color: Colors.white, size: 32),
           ),
           const SizedBox(height: 8),
-          Text(tile.label,
+          Text(
+            tile.label,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 11, color: NexOSTheme.textPri, fontWeight: FontWeight.w500,
+            style: GoogleFonts.ubuntu(
+              fontSize: 11,
+              color: NexOSTheme.textPri,
+              fontWeight: FontWeight.w400,
+              shadows: [
+                const Shadow(color: Colors.black54, blurRadius: 4),
+              ],
             ),
           ),
         ],
@@ -208,25 +255,58 @@ class _AppIcon extends StatelessWidget {
   }
 }
 
-// ── Bottom taskbar ───────────────────────────────────────────────────────────
-class _Taskbar extends StatelessWidget {
+// ── Ubuntu-style bottom dock ─────────────────────────────────────────────────
+class _Dock extends StatelessWidget {
+  final List<_AppTile> apps;
+  final void Function(BuildContext, Widget) onLaunch;
+
+  const _Dock({required this.apps, required this.onLaunch});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      margin: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: NexOSTheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: NexOSTheme.border),
-        boxShadow: [BoxShadow(color: NexOSTheme.accentGlow, blurRadius: 8)],
+        color: const Color(0xFF1A0014).withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: NexOSTheme.border.withValues(alpha: 0.6)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Icon(Icons.home_rounded, color: NexOSTheme.accent, size: 24),
-          Icon(Icons.grid_view_rounded, color: NexOSTheme.textSec, size: 22),
-          Icon(Icons.settings_outlined, color: NexOSTheme.textSec, size: 22),
+          // Home dot indicator
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.circle, color: NexOSTheme.accent, size: 6),
+              const SizedBox(height: 4),
+              Icon(Icons.home_rounded, color: NexOSTheme.accent, size: 22),
+            ],
+          ),
+
+          Container(width: 1, height: 32, color: NexOSTheme.border),
+
+          // App shortcuts in dock
+          ...apps.take(4).map((app) => GestureDetector(
+            onTap: () => onLaunch(context, app.screen),
+            child: Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: app.color.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: app.color.withValues(alpha: 0.3), width: 1),
+              ),
+              child: Icon(app.icon, color: app.color, size: 20),
+            ),
+          )),
         ],
       ),
     );
@@ -239,12 +319,10 @@ class _AppTile {
   final IconData icon;
   final Color color;
   final Widget screen;
-  final String description;
   const _AppTile({
     required this.label,
     required this.icon,
     required this.color,
     required this.screen,
-    required this.description,
   });
 }
