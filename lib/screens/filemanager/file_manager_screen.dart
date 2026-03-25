@@ -21,7 +21,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:open_file/open_file.dart';
 import 'package:intl/intl.dart';
@@ -62,7 +61,7 @@ class _FileManagerScreenState extends State<FileManagerScreen> {
 
   // ── Android API: Context.getFilesDir() via path_provider ─────────────────
   Future<void> _initDir() async {
-    final dir = await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
+    final dir = Directory('/storage/emulated/0/Documents');
     _appDir = Directory(p.join(dir.path, 'nexos_files'));
     if (!await _appDir!.exists()) await _appDir!.create(recursive: true);
     _refresh();
