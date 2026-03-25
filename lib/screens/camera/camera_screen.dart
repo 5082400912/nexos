@@ -110,19 +110,32 @@ class _CameraScreenState extends State<CameraScreen>
     if (_controller == null || !_initialized || _capturing) return;
     setState(() => _capturing = true);
     try {
+      final xfile = await _controller!.takePicture();
+
+      // Save to public gallery
+      // Native Android API: MediaStore.Images.Media.insertImage()
+      // Save to public Pictures folder
+      // Native Android API: Environment.getExternalStoragePublicDirectory(DIRECTORY_PICTURES)
+      final publicDir = Directory('/storage/emulated/0/Pictures/NexOS');
+      if (!await publicDir.exists()) {
+        await publicDir.create(recursive: true);
+      }
+      final pubFilename =
+          'photo_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.jpg';
+      await File(xfile.path).copy('${publicDir.path}/$pubFilename');
+
+      // Also save to app directory for Gallery viewer
       final dir = await _getNexOSImagesDir();
       final filename =
           'photo_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.jpg';
       final path = p.join(dir.path, filename);
-
-      final xfile = await _controller!.takePicture();
       await File(xfile.path).copy(path);
 
       setState(() {
         _lastCapturePath = path;
         _capturing = false;
       });
-      _showSnack('Photo saved: $filename');
+      _showSnack('Photo saved to Gallery and NexOS album');
     } catch (e) {
       setState(() => _capturing = false);
       _showSnack('Capture failed: $e');
