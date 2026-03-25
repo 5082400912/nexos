@@ -62,7 +62,7 @@ class _FileManagerScreenState extends State<FileManagerScreen> {
 
   // ── Android API: Context.getFilesDir() via path_provider ─────────────────
   Future<void> _initDir() async {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
     _appDir = Directory(p.join(dir.path, 'nexos_files'));
     if (!await _appDir!.exists()) await _appDir!.create(recursive: true);
     _refresh();
