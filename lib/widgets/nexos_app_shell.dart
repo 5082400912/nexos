@@ -63,7 +63,10 @@ class NexOSAppShell extends StatelessWidget {
           child: Container(height: 1, color: NexOSTheme.border),
         ),
       ),
-      body: body,
+      body: SafeArea(
+        bottom: true,
+        child: body,
+      ),
       floatingActionButton: fab,
     );
   }
